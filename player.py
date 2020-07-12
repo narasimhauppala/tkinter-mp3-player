@@ -8,7 +8,7 @@ import tkinter.ttk as ttk
 root = Tk()
 root.title("Music Player")
 root.iconbitmap('images/logo.ico')
-root.geometry("500x450")
+root.geometry("500x400")
 
 pygame.mixer.init()
 
@@ -16,11 +16,13 @@ song_length = 0
 
 
 def play_time():
+    if stopped:
+        return
     current_time = pygame.mixer.music.get_pos() / 1000
 
     # temp label
-    slider_label.config(
-        text=f'Slider: {int(slider_.get())} and Song Pos: {int(current_time)}')
+    # slider_label.config(
+    # text=f'Slider: {int(slider_.get())} and Song Pos: {int(current_time)}')
 
     convert_time = time.strftime('%H:%M:%S', time.gmtime(current_time))
     current_song = song_box.curselection()
@@ -37,7 +39,8 @@ def play_time():
 
     if int(slider_.get()) == int(song_length):
         status_bar.config(text=f'{convert_song_length}   ')
-
+    elif paused:
+        pass
     elif int(slider_.get()) == int(current_time):
         # slider not moved
         # Slider Pos
@@ -58,10 +61,13 @@ def play_time():
         slider_.config(value=next_time)
 
     #status_bar.config(text=f'{convert_time} || {convert_song_length}   ')
-    # slider_.config(value=int(current_time))
+    slider_.config(value=int(current_time))
 
     # Update Time
     status_bar.after(1000, play_time)
+
+# End Of play Time
+
 
 
 def add_song():
@@ -76,6 +82,8 @@ def add_song():
 
 
 def play():
+    global stopped
+    stopped = False
     song = song_box.get(ACTIVE)
     song = f'C:/Users/SAINA/Downloads/{song}.mp3'
     pygame.mixer.music.load(song)
@@ -86,11 +94,21 @@ def play():
     # slider_position = int(song_length)
     # slider_.config(to=slider_position, value=0)
 
+global stopped 
+stopped = True
+
 
 def stop():
+    # Rest To Init
+    status_bar.config(text="")
+    slider_.config(value=0)
+    # Stop from playing
     pygame.mixer.music.stop()
     song_box.selection_clear(ACTIVE)
     status_bar.config(text="")
+    # stop var 
+    global stopped 
+    stopped = True
 
 
 global paused
@@ -100,7 +118,6 @@ paused = False
 def pause(is_paused):
     global paused
     paused = is_paused
-
     if paused:
         pygame.mixer.music.unpause()
         paused = False
@@ -121,6 +138,9 @@ def add_many_songs():
 
 
 def next_song():
+    # Rest To Init
+    status_bar.config(text="")
+    slider_.config(value=0)
     next_one = song_box.curselection()
     # print(next_one)
     next_one = next_one[0]+1
@@ -134,6 +154,9 @@ def next_song():
 
 
 def previous_song():
+    # Rest To Init
+    status_bar.config(text="")
+    slider_.config(value=0)
     next_one = song_box.curselection()
     # print(next_one)
     next_one = next_one[0]-1
@@ -147,11 +170,13 @@ def previous_song():
 
 
 def delete_song():
+    stop()
     song_box.delete(ANCHOR)
     pygame.mixer.music.stop()
 
 
 def delete_all_songs():
+    stop()
     song_box.delete(0, END)
     pygame.mixer.music.stop()
 
@@ -231,7 +256,7 @@ slider_ = ttk.Scale(root, from_=0, to=100, orient=HORIZONTAL,
 slider_.pack(pady=30)
 
 # slider label
-slider_label = Label(root, text="0")
-slider_label.pack(pady=10)
+#slider_label = Label(root, text="0")
+# slider_label.pack(pady=10)
 
 root.mainloop()
